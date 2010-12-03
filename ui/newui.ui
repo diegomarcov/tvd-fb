@@ -38,7 +38,7 @@
       </property>
       <property name="url">
        <url>
-        <string>https://ssl.facebook.com/login.php?api_key=121815414497011&amp;skip_api_login=1&amp;display=popup&amp;cancel_url=http://www.facebook.com/connect/login_success.html?error_reason=user_denied&amp;error=access_denied&amp;error_description=The+user+denied+your+request.&amp;fbconnect=1&amp;next=http://www.facebook.com/connect/uiserver.php?method=permissions.request&amp;app_id=121815414497011&amp;display=popup&amp;redirect_uri=http%3A%2F%2Fwww.facebook.com%2Fconnect%2Flogin_success.html&amp;type=user_agent&amp;fbconnect=1&amp;%2Aapp_id%2A=121815414497011&amp;from_login=1</string>
+        <string>https://graph.facebook.com/oauth/authorize?client_id=121815414497011&amp;redirect_uri=http://www.facebook.com/connect/login_success.html&amp;type=user_agent&amp;scope=user_photos,friends_photos,publish_stream,user_status,friends_status&amp;display=popup</string>
        </url>
       </property>
      </widget>
@@ -192,7 +192,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>20</height>
+     <height>18</height>
     </rect>
    </property>
   </widget>
