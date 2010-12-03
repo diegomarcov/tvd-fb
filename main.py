@@ -34,9 +34,41 @@ class MainWindow(QtGui.QMainWindow):
 			
 	def displayNewsFeed(self):
 		newsFeed = self.facebook.getNewsFeed()
-		# for post in newsFeed['data']:
-		print newsFeed
-		
+		self.ui.listWidget.clear()
+		for post in newsFeed['data']:
+			# nombre de usuario
+			userName = post['from']['name']
+			
+			userImage = self.facebook.getProfilePicture(post['from']['id'])
+			
+			# LIKES que tiene el post
+			if "likes" in post:
+				if post['likes'] == 1:
+					likesText = "\n(A 1 persona le gusta esto.)"
+				else:
+					likesText = "\n(A %s personas les gusta esto.)" % post['likes']
+			else:
+				likesText = ""
+			
+			# comentarios del post
+			if "comments" in post:
+				if post['comments']['count'] == 1:
+					commentsText = "\n(1 comentario.)"
+				else:
+					commentsText = "\n(%s comentarios.)" % post['comments']['count']
+			else:
+				commentsText = ""
+			
+			# si el mensaje tiene target, lo muestro
+			if "to" in post:
+				userName += " >> %s" % post['to']['data'][0]['name']
+			
+			if "message" in post:
+				message = post['message']
+			else:
+				message = ""
+			
+			QtGui.QListWidgetItem(QtGui.QIcon(userImage), '%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText), self.ui.listWidget)
 	
 	def __init__(self):
 		super(MainWindow, self).__init__()
