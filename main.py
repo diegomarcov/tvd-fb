@@ -59,16 +59,31 @@ class MainWindow(QtGui.QMainWindow):
 			else:
 				commentsText = ""
 			
-			# si el mensaje tiene target, lo muestro
-			if "to" in post:
-				userName += " >> %s" % post['to']['data'][0]['name']
-			
+			#si el mensaje tiene cuerpo, lo muestro
 			if "message" in post:
-				message = post['message']
+				message = "\n%s" % post['message']
 			else:
 				message = ""
 			
-			QtGui.QListWidgetItem(QtGui.QIcon(userImage), '%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText), self.ui.listWidget)
+			if post['type'] == "status":
+				outputString = '%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText)
+			elif post['type'] == "link":
+				if "link" in post:
+					link = "\nLink: %s" % post['link']
+				else:
+					raise "This shouldn't happen!"
+				outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, link)
+			elif post['type'] == "video":
+				if "source" in post:
+					source = "\nVideo: %s" % post['source']
+				else:
+					raise "This shouldn't happen!"
+				outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
+			# si el mensaje tiene target, lo muestro
+			# if "to" in post:
+				# userName += " >> %s" % post['to']['data'][0]['name']
+			
+			QtGui.QListWidgetItem(QtGui.QIcon(userImage), outputString, self.ui.listWidget)
 	
 	def __init__(self):
 		super(MainWindow, self).__init__()
