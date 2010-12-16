@@ -28,3 +28,12 @@ class Facebook_Interface():
 			self.image.loadFromData(self.imagedata)
 			self.profilePictures[user] = self.image
 			return self.image
+			
+	def getWallPosts(self, target):
+		return self.graph.get_connections(target, "feed")
+	
+	def postToWall(self, target, message):
+		self.graph.put_wall_post(message=message, attachment={}, profile_id=target)
+		
+	def getComments(self, postID):
+		return self.graph.get_connections(postID, "comments")
