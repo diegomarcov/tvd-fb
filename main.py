@@ -13,10 +13,17 @@ class MainWindow(QtGui.QMainWindow):
 		self.ui = Ui_MainWindow()
 		self.ui.setupUi(self)
 		
+		# self.mode indica en qué modo de exploración está el usuario: si en la página principal, o visitando perfiles
 		self.mode = HOME
+		
+		# este atributo guarda el profile ID que se está visitando en este momento; si el usuario está en modo HOME,
+		# entonces es None
+		self.currentDisplayedProfile = None
+		
+		# estas dos listas contienen los post ID y profile ID del listWidget que muestra los posts, respectivamente
 		self.postIDList = []
 		self.profileIDList = []
-		self.currentDisplayedProfile = None
+		
 		
 		# SIGNALS ################################################
 		QtCore.QObject.connect(self.ui.webView, QtCore.SIGNAL("urlChanged(const QUrl&)"), self.tryLogin)
@@ -24,6 +31,7 @@ class MainWindow(QtGui.QMainWindow):
 		QtCore.QObject.connect(self.ui.btnNewsFeed, QtCore.SIGNAL("clicked()"), self.displayNewsFeed)
 		QtCore.QObject.connect(self.ui.listWidget, QtCore.SIGNAL("itemClicked(QListWidgetItem*)"), self.displayComments)
 		QtCore.QObject.connect(self.ui.btnDisplayProfile, QtCore.SIGNAL("clicked()"), self.displaySelectedProfile)
+		QtCore.QObject.connect(self.ui.btnShowFriends, QtCore.SIGNAL("clicked()"), self.displayFriends)
 		# @TODO: Visitar el perfil de una persona, mostrar los comentarios en un post dado, agregar un comentario a un post
 	
 	def getSelectedProfileID(self):
@@ -44,6 +52,23 @@ class MainWindow(QtGui.QMainWindow):
 			self.facebook = Facebook_Interface(oauthToken)
 			self.ui.stackedWidget.setCurrentIndex(1)
 	
+	def displayFriends(self):
+		profileID = self.getSelectedProfileID()
+		friends = self.facebook.getFriends(profileID)
+		self.ui.listWidget.clear()
+		self.profileIDList = []
+		self.postIDList = []
+		i = 0
+		# @TODO: no se pueden pedir los amigos de cualquier ID.... fixear eso, O unicamente permitir para el usuario
+		for friend in friends['data']:
+			if i<35:
+				self.profileIDList.append(friend['id'])
+				pic = self.facebook.getProfilePicture(friend['id'])
+				QtGui.QListWidgetItem(QtGui.QIcon(pic), friend['name'], self.ui.listWidget)
+			else:
+				print "Friend limit reached!"
+				break
+				
 	def displayComments(self):
 		postid = self.getSelectedPostID()
 		comments = self.facebook.getComments(postid)
@@ -132,11 +157,17 @@ class MainWindow(QtGui.QMainWindow):
 				else:
 					raise "This shouldn't happen!"
 				outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
+			elif post['type'] == "picture":
+				if "picture" in post:
+					source = "\nPicture: %s" % post['picture']
+				else:
+					raise "This souldn't happen!"
+				outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
 			
 			# @TODO: ver qué pasa con las fotos!
-			print "########## NEW POST ###############"
-			print outputString
-			QtGui.QListWidgetItem(QtGui.QIcon(userImage), outputString, self.ui.listWidget)
+			# print "########## NEW POST ###############"
+			# print outputString
+			QtGui.QListWidgetItem(QtGui.QIcon(userImage), unicode(outputString), self.ui.listWidget)
 			
 			
 	def displayNewsFeed(self):
