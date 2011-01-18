@@ -32,7 +32,8 @@ class MainWindow(QtGui.QMainWindow):
 		QtCore.QObject.connect(self.ui.listWidget, QtCore.SIGNAL("itemClicked(QListWidgetItem*)"), self.displayComments)
 		QtCore.QObject.connect(self.ui.btnDisplayProfile, QtCore.SIGNAL("clicked()"), self.displaySelectedProfile)
 		QtCore.QObject.connect(self.ui.btnShowFriends, QtCore.SIGNAL("clicked()"), self.displayFriends)
-		# @TODO: Visitar el perfil de una persona, mostrar los comentarios en un post dado, agregar un comentario a un post
+		QtCore.QObject.connect(self.ui.btnComment, QtCore.SIGNAL("clicked()"), self.displayFriends)
+		# @TODO: agregar un comentario a un post
 	
 	def getSelectedProfileID(self):
 		return self.profileIDList[self.ui.listWidget.currentRow()]
@@ -103,73 +104,75 @@ class MainWindow(QtGui.QMainWindow):
 	
 	def displayPosts(self, posts):
 		for post in posts['data']:
-			# nombre de usuario
-			self.profileIDList.append(post['from']['id'])
-			self.postIDList.append(post['id'])
-			userName = post['from']['name']
-			
-			userImage = self.facebook.getProfilePicture(post['from']['id'])
-			
-			# LIKES que tiene el post
-			if "likes" in post:
-				if post['likes'] == 1:
-					likesText = "\n(A 1 persona le gusta esto.)"
-				else:
-					likesText = "\n(A %s personas les gusta esto.)" % post['likes']
-			else:
-				likesText = ""
-			
-			# comentarios del post
-			if "comments" in post:
-				if post['comments']['count'] == 1:
-					commentsText = "\n(1 comentario.)"
-				else:
-					commentsText = "\n(%s comentarios.)" % post['comments']['count']
-			else:
-				commentsText = ""
-			
-			#si el mensaje tiene cuerpo, lo muestro
-			if "message" in post:
-				message = "\n%s" % post['message']
-			else:
-				message = ""
-			
-			# si el mensaje tiene target, lo muestro
-			if "to" in post:
-				userName += " >> %s" % post['to']['data'][0]['name']
+			if "type" in post:
+				# nombre de usuario
+				self.profileIDList.append(post['from']['id'])
+				self.postIDList.append(post['id'])
+				userName = post['from']['name']
 				
-			# formateo según el tipo de mensaje ###############################
-			
-			# si es una actualización de estado, lo muestro directamente
-			if post['type'] == "status":
-				outputString = '%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText)
-			# si es un link... por ahora obtengo el link y nada más @TODO
-			elif post['type'] == "link":
-				if "link" in post:
-					link = "\nLink: %s" % post['link']
+				userImage = self.facebook.getProfilePicture(post['from']['id'])
+				
+				# LIKES que tiene el post
+				if "likes" in post:
+					if post['likes'] == 1:
+						likesText = "\n(A 1 persona le gusta esto.)"
+					else:
+						likesText = "\n(A %s personas les gusta esto.)" % post['likes']
 				else:
-					raise "This shouldn't happen!"
-				outputString = '%s\n%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, link)
-			# si es un video... por ahora obtengo el source y nada más @TODO ver si los links son sólo de YouTube o también de facebook; ver de asociar con el widget de Juan
-			elif post['type'] == "video":
-				if "source" in post:
-					source = "\nVideo: %s" % post['source']
+					likesText = ""
+				
+				# comentarios del post
+				if "comments" in post:
+					if post['comments']['count'] == 1:
+						commentsText = "\n(1 comentario.)"
+					else:
+						commentsText = "\n(%s comentarios.)" % post['comments']['count']
 				else:
-					raise "This shouldn't happen!"
-				outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
-			elif post['type'] == "picture":
-				if "picture" in post:
-					source = "\nPicture: %s" % post['picture']
+					commentsText = ""
+				
+				#si el mensaje tiene cuerpo, lo muestro
+				if "message" in post:
+					message = "\n%s" % post['message']
 				else:
-					raise "This souldn't happen!"
-				outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
-			
-			# @TODO: ver qué pasa con las fotos!
-			# print "########## NEW POST ###############"
-			# print outputString
-			QtGui.QListWidgetItem(QtGui.QIcon(userImage), unicode(outputString), self.ui.listWidget)
-			
-			
+					message = ""
+				
+				# si el mensaje tiene target, lo muestro
+				if "to" in post:
+					userName += " >> %s" % post['to']['data'][0]['name']
+					
+				# formateo según el tipo de mensaje ###############################
+				
+				# si es una actualización de estado, lo muestro directamente
+				if post['type'] == "status":
+					outputString = '%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText)
+				# si es un link... por ahora obtengo el link y nada más @TODO
+				elif post['type'] == "link":
+					if "link" in post:
+						link = "\nLink: %s" % post['link']
+					else:
+						raise "This shouldn't happen!"
+					outputString = '%s\n%s\n%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, link)
+				# si es un video... por ahora obtengo el source y nada más @TODO ver si los links son sólo de YouTube o también de facebook; ver de asociar con el widget de Juan
+				elif post['type'] == "video":
+					if "source" in post:
+						source = "\nVideo: %s" % post['source']
+					else:
+						raise "This shouldn't happen!"
+					outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
+				# si es una imagen, por ahora pongo el source y nada más
+				elif post['type'] == "picture":
+					if "picture" in post:
+						source = "\nPicture: %s" % post['picture']
+					else:
+						raise "This souldn't happen!"
+					outputString = '%s\n%s%s%s%s' % (unicode(userName), unicode(message), likesText, commentsText, source)
+				
+				# print "########## NEW POST ###############"
+				# print outputString
+				QtGui.QListWidgetItem(QtGui.QIcon(userImage), unicode(outputString), self.ui.listWidget)
+			else: # este caso es OTRO fail de la api de facebook... vienen posts sin TYPE... IMPRESENTABLE
+				pass
+
 	def displayNewsFeed(self):
 		newsFeed = self.facebook.getNewsFeed()
 		self.ui.listWidget.clear()
